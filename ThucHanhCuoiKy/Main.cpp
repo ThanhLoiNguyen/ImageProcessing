@@ -2,6 +2,8 @@
 #include "opencv2\highgui\highgui.hpp"
 #include "ImgProcFuncs.h"
 #include "Menu.h"
+#include "HiepITLib.h"
+
 #include <iostream>
 using namespace std;
 void showImageResult(Mat &imageResLib, Mat &imageResCoding);
@@ -20,7 +22,7 @@ int main()
 		std::cout << "No data!";
 		return -1;
 	}
-	imshow("Library", imageColor);
+
 	waitKey(0);
 	//do
 	//{
