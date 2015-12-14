@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <stdlib.h>
 using namespace  std;
 
@@ -13,7 +13,7 @@ void showMenu()
 		<< "\t4. Loc thong tan so cao bang phep bien doi Fourier va DL Convolution" << endl << endl
 		<< "Nhom tac vu 6 - Phep bien doi Karhunen Loeve:" << endl
 		<< "\t5. Phan tich thanh phan chinh" << endl
-		<< "\t6. Rut trich dat trung cho tap mat nguoi dua vao phan tich thanh phan chinh" << endl << endl
+		<< "\t6. Rut trich dat trung cho tap mat nguoi" << endl << endl
 		<< "Nhom tac vu 7 - Phan doan anh:" << endl
 		<< "\t7. Region growing" << endl
 		<< "\t8. K-means" << endl << endl
@@ -23,32 +23,26 @@ void showMenu()
 		<< "Vui long cho tac vu - go 0 de thoat" << endl;
 }
 
-//int showMenuFunc4()
-//{
-//	system("cls");
-//	int f;
-//	cout << "-----CHUYEN DOI RGB -> HSV VA NGUOC LAI-----" << endl
-//		<< "\t1. RGB->HSV" << endl
-//		<< "\t2. HSV->RGB" << endl;
-//	cin >> f;
-//	return f;
-//}
-//
-//int showMenuFunc5()
-//{
-//	system("cls");
-//	int f;
-//	cout << "-----CHUYEN DOI RGB -> LUV, Lab, YcbCr-----" << endl
-//		<< "\t1. RGB->LUV" << endl
-//		<< "\t2. LUV->RGB" << endl
-//		<< "\t3. RGB->Lab" << endl
-//		<< "\t4. Lab->RGB" << endl
-//		<< "\t5. RGB->YcbCr" << endl
-//		<< "\t6. YcbCr->RGB" << endl;
-//	cin >> f;
-//	return f;
-//}
-//
+
+int showMenuFunc9()
+{
+	system("cls");
+	int f;
+	cout << "-----Toan tu hinh thai tren anh nhi phan-----" << endl
+		<< "\t1. Dilation" << endl
+		<< "\t2. Erosion" << endl
+		<< "\t3. Opening" << endl
+		<< "\t4. Closing" << endl
+		<< "\t5. BoundaryExtraction" << endl
+		<< "\t6. RegionFilling" << endl
+		<< "\t7. HitOrMiss" << endl
+		<< "\t8. Thinning" << endl
+		<< "\t9. Thickening" << endl;
+
+	cin >> f;
+	return f;
+}
+
 //int showMenuFunc6()
 //{
 //	system("cls");

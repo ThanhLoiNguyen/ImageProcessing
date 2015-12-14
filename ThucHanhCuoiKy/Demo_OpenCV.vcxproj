@@ -86,13 +86,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="HiepITLib.cpp" />
     <ClCompile Include="ImgProcFuncs.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Menu.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HiepITLib.h" />
     <ClInclude Include="ImgProcFuncs.h" />
     <ClInclude Include="Menu.h" />
   </ItemGroup>
