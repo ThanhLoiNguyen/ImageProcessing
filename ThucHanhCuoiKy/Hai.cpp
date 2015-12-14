@@ -1,12 +1,60 @@
 #include "Hai.h"
 #include <iostream>
+#include <utility>
+#include <queue>
 
 using namespace cv;
+using namespace std;
+
+typedef pair<int, int> pii;
 
 void GrayscaletoBinary(Mat &src, Mat &dst)
 {
 	normalize(src, dst, 0, 1, NORM_MINMAX);
 	normalize(dst, dst, 0, 255, NORM_MINMAX);
+}
+
+double pixelDistance(Vec3b p1, Vec3b p2)
+{
+	double res = 0;
+	for (int i = 0; i < 3; ++i)
+	{
+		res += (1.0*p1[i] - p2[i])*(1.0*p1[i] - p2[i]);
+	}
+	return sqrt(res);
+}
+
+void RegionGrowingSegmentation(Mat &src, Mat &dst, int seedx, int seedy, double threshold)
+{
+	const int dx[] = { -1, -1, -1, 0, 0, 1, 1, 1 };
+	const int dy[] = { -1, 0, 1, -1, 1, -1, 0, 1 };
+	Mat res = src.clone();
+	Mat visited = Mat::zeros(src.size(), CV_8U);
+
+	queue<pii> q;
+	q.push(pii(seedx, seedy));
+	visited.at<uchar>(seedx, seedy) = 1;
+
+	while (!q.empty())
+	{
+		int ux = q.front().first, uy = q.front().second;
+		q.pop();
+
+		for (int i = 0; i < 8; ++i)
+		{
+			int adjx = ux + dx[i], adjy = uy + dy[i];
+			if (adjx >= 0 && adjx < src.rows && adjy >= 0 && adjy < src.cols
+				&& !visited.at<uchar>(adjx, adjy)
+				&& pixelDistance(src.at<Vec3b>(seedx,seedy), src.at<Vec3b>(adjx, adjy)) < threshold)
+			{
+				res.at<Vec3b>(adjx, adjy) = Vec3b(255, 255, 255) - src.at<Vec3b>(seedx, seedy);
+				visited.at<uchar>(adjx, adjy) = 1;
+				q.push(pii(adjx, adjy));
+			}
+		}
+	}
+
+	dst = res.clone();
 }
 
 void BinaryDilation(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory)
