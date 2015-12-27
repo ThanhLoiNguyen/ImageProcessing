@@ -6,6 +6,7 @@
 
 using namespace cv;
 int** newKernel();
+int** newKernel(int);
 void repairKernel(int** kernel);
 void deleteKernel(int **kernel);
 // Chuyển ảnh xám sang ảnh nhị phân
@@ -63,24 +64,30 @@ void BinaryThickening(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int
 
 
 // 8.2 Toán tử hình thái học trên ảnh xám (chưa làm)
-void GrayScaleDilation(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
+void GrayScaleDilation(Mat &src, Mat &dst, int **kernel, int sz);
 void GrayScaleDilationLib(Mat &src, Mat &dst);
 
-void GrayScaleErosion(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
+void GrayScaleErosion(Mat &src, Mat &dst, int **kernel, int sz);
 void GrayScaleErosionLib(Mat &src, Mat &dst);
 
-void GrayScaleOpening(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
+void GrayScaleOpening(Mat &src, Mat &dst, int **kernel, int sz);
 void GrayScaleOpeningLib(Mat &src, Mat &dst);
 
-void GrayScaleClosing(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
+void GrayScaleClosing(Mat &src, Mat &dst, int **kernel, int sz);
 void GrayScaleClosingLib(Mat &src, Mat &dst);
 
-void GrayScaleBoundaryExtraction(Mat &src, Mat &dst);
+void GrayscaleSmoothing(Mat &src, Mat &dst, int **kernel, int sz);
+void GrayscaleSmoothingLib(Mat &src, Mat &dst);
 
-void GrayScaleRegionFilling(Mat &src, Mat &dst, int seedx, int seedy);
+void GrayscaleMorphologyGradient(Mat &src, Mat &dst, int **kernel, int sz);
+void GrayscaleMorphologyGradientLib(Mat &src, Mat &dst);
 
-void GrayScaleHitOrMiss(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
+void TopHatTransformation(Mat &src, Mat &dst, int **kernel, int sz);
+void TopHatTransformationLib(Mat &src, Mat &dst);
 
-void GrayScaleThinning(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
+void TexturalSegmentation(Mat &src, Mat &dst, int **kernel, int sz);
+void TexturalSegmentationLib(Mat &src, Mat &dst);
 
-void GrayScaleThickening(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
+void Granulometry();
+
+void Reconstruction();

@@ -498,3 +498,133 @@ void BinaryThickening(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int
 	dst = res.clone();
 }
 //----------------------------------------------------------------------------------//
+
+
+//------- Toán tử hình thái học trên ảnh xám ----------------------------
+
+void GrayScaleDilation(Mat &src, Mat &dst, int **kernel, int sz)
+{
+	Mat res = src.clone();
+
+	for (int x = 0; x < src.rows - sz; ++x)
+		for (int y = 0; y < src.cols - sz; ++y)
+		{
+			int max = 0;
+			for (int i = 0; i < sz; ++i)
+				for (int j = 0; j < sz; ++j)
+					if (kernel[i][j] != -1)
+					{
+						int tmp = src.at<uchar>(x + i, y + j) + kernel[i][j];
+						if (max < tmp)
+							max = tmp;
+					}
+			if (max > 255)
+				max = 255;
+			res.at<uchar>(x , y) = max;
+		}
+
+	dst = res.clone();
+}
+
+void GrayScaleDilationLib(Mat &src, Mat &dst)
+{
+	dilate(src, dst, Mat());
+}
+
+void GrayScaleErosion(Mat &src, Mat &dst, int **kernel, int sz)
+{
+	Mat res = src.clone();
+
+	for (int x = 0; x < src.rows - sz; ++x)
+		for (int y = 0; y < src.cols - sz; ++y)
+		{
+			int min = 255;
+			for (int i = 0; i < sz; ++i)
+				for (int j = 0; j < sz; ++j)
+					if (kernel[i][j] != -1)
+					{
+						int tmp = src.at<uchar>(x + i, y + j) - kernel[i][j];
+						if (min > tmp)
+							min = tmp;
+					}
+			if (min < 0)
+				min = 0;
+			res.at<uchar>(x, y) = min;
+		}
+
+	dst = res.clone();
+}
+void GrayScaleErosionLib(Mat &src, Mat &dst)
+{
+	erode(src, dst, Mat());
+}
+
+void GrayScaleOpening(Mat &src, Mat &dst, int **kernel, int sz)
+{
+	GrayScaleErosion(src, dst, kernel, sz);
+	GrayScaleDilation(dst, dst, kernel, sz);
+}
+
+void GrayScaleOpeningLib(Mat &src, Mat &dst)
+{
+	morphologyEx(src, dst, MORPH_OPEN, Mat());
+}
+
+void GrayScaleClosing(Mat &src, Mat &dst, int **kernel, int sz)
+{
+	GrayScaleDilation(src, dst, kernel, sz);
+	GrayScaleErosion(dst, dst, kernel, sz);
+}
+
+void GrayScaleClosingLib(Mat &src, Mat &dst)
+{
+	morphologyEx(src, dst, MORPH_CLOSE, Mat());
+}
+
+void GrayscaleSmoothing(Mat &src, Mat &dst, int **kernel, int sz)
+{
+	GrayScaleOpening(src, dst, kernel, sz);
+	GrayScaleClosing(src, dst, kernel, sz);
+}
+void GrayscaleSmoothingLib(Mat &src, Mat &dst)
+{
+	GrayScaleOpeningLib(src, dst);
+	GrayScaleClosingLib(src, dst);
+}
+
+void GrayscaleMorphologyGradient(Mat &src, Mat &dst, int** kernel, int sz)
+{
+	Mat dst1, dst2;
+	GrayScaleDilation(src, dst1, kernel, sz);
+	GrayScaleErosion(src, dst2, kernel, sz);
+	dst = dst1 - dst2;
+	normalize(dst, dst, 0, 255, NORM_MINMAX);
+}
+
+void GrayscaleMorphologyGradientLib(Mat &src, Mat &dst)
+{
+	morphologyEx(src, dst, MORPH_GRADIENT, Mat());
+}
+
+void TopHatTransformation(Mat &src, Mat &dst, int **kernel, int sz)
+{
+	Mat dst1;
+	GrayScaleOpening(src, dst1, kernel, sz);
+	dst = src - dst1;
+	normalize(dst, dst, 0, 255, NORM_MINMAX);
+}
+void TopHatTransformationLib(Mat &src, Mat &dst)
+{
+	morphologyEx(src, dst, MORPH_TOPHAT, Mat());
+}
+
+void TexturalSegmentation(Mat &src, Mat &dst, int **kernel, int sz)
+{
+	GrayScaleClosing(src, dst, kernel, sz);
+	GrayScaleOpening(dst, dst, kernel, sz);
+}
+void TexturalSegmentationLib(Mat &src, Mat &dst)
+{
+	GrayScaleClosingLib(src, dst);
+	GrayScaleOpeningLib(dst, dst);
+}

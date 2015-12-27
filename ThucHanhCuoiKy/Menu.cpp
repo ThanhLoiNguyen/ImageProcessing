@@ -43,48 +43,21 @@ int showMenuFunc9()
 	return f;
 }
 
-//int showMenuFunc6()
-//{
-//	system("cls");
-//	int f;
-//	cout << "-----HIEU CHINH MAU SAC MO HINH TUYEN TINH-----" << endl
-//		<< "\t1. Dieu chinh do sang" << endl
-//		<< "\t2. Dieu chinh do tuong phan" << endl
-//		<< "\t3. Dieu chinh do sang va tuong phan" << endl;
-//	cin >> f;
-//	return f;
-//}
-//
-//int showMenuFunc7()
-//{
-//	system("cls");
-//	int f;
-//	cout << "-----HIEU CHINH MAU SAC MO HINH PHI TUYEN-----" << endl
-//		<< "\t1. Dieu chinh mau sac theo ham logarit" << endl
-//		<< "\t2. Dieu chinh mau sac theo ham mu" << endl;
-//	cin >> f;
-//	return f;
-//}
-//
-//int showMenuFunc11()
-//{
-//	system("cls");
-//	int f;
-//	cout << "-----CAC TOAN TU LAM TRON ANH-----" << endl
-//		<< "\t1. Toan tu trung binh" << endl
-//		<< "\t2. Toan tu Gauss" << endl
-//		<< "\t3. Toan tu trung vi" << endl;
-//	cin >> f;
-//	return f;
-//}
-//
-//int showMenuFunc12()
-//{
-//	system("cls");
-//	int f;
-//	cout << "-----CAC TOAN TU PHAT HIEN BIEN CANH-----" << endl
-//		<< "\t1. Toan tu LAPLACE" << endl
-//		<< "\t2. Toan tu SOBEL" << endl;
-//	cin >> f;
-//	return f;
-//}
+int showMenuFunc10()
+{
+	system("cls");
+	int f;
+	cout << "-----Toan tu hinh thai tren anh xam-----" << endl
+		<< "\t1. Grayscale Dilation" << endl
+		<< "\t2. Grayscale Erosion" << endl
+		<< "\t3. Grayscale Opening" << endl
+		<< "\t4. Grayscale Closing" << endl
+		<< "\t5. Grayscale smoothing" << endl
+		<< "\t6. Grayscale Morphology Gradient" << endl
+		<< "\t7. Top-hat transformation" << endl
+		<< "\t8. Textural segmentation" << endl
+		<< "\t9. Granulometry" << endl
+		<< "\t10. Reconstruction" << endl;
+	cin >> f;
+	return f;
+}

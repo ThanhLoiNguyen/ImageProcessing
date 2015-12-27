@@ -6,7 +6,11 @@
 #include <iostream>
 #include <conio.h>
 using namespace std;
+int** newKernel(int size);
+void deleteKernel(int **kernel);
+void repairKernel(int** kernel);
 void showImageResult(Mat &imageResLib, Mat &imageResCoding);
+
 
 int main()
 {
@@ -24,7 +28,12 @@ int main()
 		std::cout << "No data!";
 		return -1;
 	}
-
+	int size = 3;
+	int **kernel = newKernel(size);
+	for (int i = 0; i < size; ++i)
+		for (int j = 0; j < size; j++)
+			kernel[i][j] = 0;
+	kernel[0][0] = kernel[2][0] = kernel[0][2] = kernel[2][2] = -1;
 	waitKey(0);
 	do
 	{
@@ -69,7 +78,7 @@ int main()
 		case 9:
 		{
 			int f = showMenuFunc9();
-			int **kernel = newKernel();
+			int **kernel = newKernel(3);
 			switch (f)
 			{
 			case 1:
@@ -130,10 +139,68 @@ int main()
 			deleteKernel(kernel);
 			break;
 		}
-		case 10:
-			cout << "Developing!";
-			getch();
-			break;
+		case 10:// Toán tử hình thái học ảnh xám
+		{
+			int f = showMenuFunc10();
+			int **kernel = newKernel(3);
+			for (int i = 0; i < 3; ++i)
+				for (int j = 0; j < 3; ++j)
+					kernel[i][j] = 10;
+			switch (f)
+			{
+			case 1: //Dãn nở độ sáng
+				GrayScaleDilationLib(imageGray, imageResLib);
+				GrayScaleDilation(imageGray, imageResCoding, kernel, 3);
+				imshow("Original", imageGray);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 2: //Co độ sáng
+				GrayScaleErosionLib(imageGray, imageResLib);
+				GrayScaleErosion(imageGray, imageResCoding, kernel, 3);
+				imshow("Original", imageGray);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 3: //Mở độ sáng
+				GrayScaleOpeningLib(imageGray, imageResLib);
+				GrayScaleOpening(imageGray, imageResCoding, kernel, 3);
+				imshow("Original", imageGray);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 4: //Đóng độ sáng
+				GrayScaleClosingLib(imageGray, imageResLib);
+				GrayScaleClosing(imageGray, imageResCoding, kernel, 3);
+				imshow("Original", imageGray);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 5: //Làm trơn
+				GrayscaleSmoothingLib(imageGray, imageResLib);
+				GrayscaleSmoothing(imageGray, imageResCoding, kernel, 3);
+				imshow("Original", imageGray);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 6: //Toán tử Gradient
+				GrayscaleMorphologyGradient(imageGray, imageResCoding, kernel, 3);
+				GrayscaleMorphologyGradientLib(imageGray, imageResLib);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 7: //Toán tử đỉnh nón
+				TopHatTransformation(imageGray, imageResCoding, kernel, 3);
+				TopHatTransformationLib(imageGray, imageResLib);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 8: //Toán tử textual segmentation
+				TexturalSegmentation(imageGray, imageResCoding, kernel, 3);
+				TexturalSegmentationLib(imageGray, imageResLib);
+				showImageResult(imageResLib, imageResCoding);
+				break;
+			case 9: //Granulometry
+				break;
+			case 10://Toán tử hồi phục
+				break;
+
+			}
+			
+		}
 		default:
 			cout << "Chon sai chuc nang, vui long chon lai" << endl;
 		}
@@ -151,13 +218,13 @@ void showImageResult(Mat &imageResLib, Mat &imageResCoding)
 		imshow("Coding", imageResCoding);
 }
 
-int** newKernel()
+int** newKernel(int size)
 {
-	int **kernel = new int*[3];
-	for (int i = 0; i < 3; i++)
+	int **kernel = new int*[size];
+	for (int i = 0; i < size; i++)
 	{
-		kernel[i] = new int[3];
-		for (int j = 0; j < 3; j++)
+		kernel[i] = new int[size];
+		for (int j = 0; j < size; j++)
 			kernel[i][j] = 1;
 	}
 	return kernel;
