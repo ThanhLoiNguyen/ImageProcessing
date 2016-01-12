@@ -251,13 +251,13 @@ void extractFaceFeature()
 // KMean sử dụng thư viện kmeans
 void KMeansLib(Mat src, Mat &dst, int clusterCount)
 {
-	std::cout << "Kmean Processing. It can take some seconds, please wait!" << std::endl;
+	std::cout << "KmeanLib::Kmean yeu cau ban chay o che do Release. Kmean started!" << std::endl;
 
 	Mat samples(src.rows * src.cols, 3, CV_32F);
 	for (int y = 0; y < src.rows; y++)
-		for (int x = 0; x < src.cols; x++)
-			for (int z = 0; z < 3; z++)
-				samples.at<float>(y + x*src.rows, z) = src.at<Vec3b>(y, x)[z];
+	for (int x = 0; x < src.cols; x++)
+	for (int z = 0; z < 3; z++)
+		samples.at<float>(y + x*src.rows, z) = src.at<Vec3b>(y, x)[z];
 
 	Mat labels;
 	int attempts = 5;
@@ -266,48 +266,129 @@ void KMeansLib(Mat src, Mat &dst, int clusterCount)
 
 	Mat new_image(src.size(), src.type());
 	for (int y = 0; y < src.rows; y++)
-		for (int x = 0; x < src.cols; x++)
-		{
-			int cluster_idx = labels.at<int>(y + x*src.rows, 0);
-			new_image.at<Vec3b>(y, x)[0] = centers.at<float>(cluster_idx, 0);
-			new_image.at<Vec3b>(y, x)[1] = centers.at<float>(cluster_idx, 1);
-			new_image.at<Vec3b>(y, x)[2] = centers.at<float>(cluster_idx, 2);
-		}
+	for (int x = 0; x < src.cols; x++)
+	{
+		int cluster_idx = labels.at<int>(y + x*src.rows, 0);
+		new_image.at<Vec3b>(y, x)[0] = centers.at<float>(cluster_idx, 0);
+		new_image.at<Vec3b>(y, x)[1] = centers.at<float>(cluster_idx, 1);
+		new_image.at<Vec3b>(y, x)[2] = centers.at<float>(cluster_idx, 2);
+	}
 
 	dst = new_image.clone();
 
-	std::cout << "Kmean process completely!" << std::endl;
+	std::cout << "KmeanLib::Kmean process completely!" << std::endl;
 }
 
-// Kmean tự code - Chưa cài
+struct RGB
+{
+	int r, g, b;
+};
+
+// Kmean Coding
 void Kmeans(Mat src, Mat &dst, int clusterCount)
 {
-	std::cout << "Kmean Processing. It can take some seconds, please wait!" << std::endl;
+	std::cout << "KmeanCode::Kmean yeu cau ban chay o che do Release. Kmean started!" << std::endl;
 
-	Mat samples(src.rows * src.cols, 3, CV_32F);
-	for (int y = 0; y < src.rows; y++)
-		for (int x = 0; x < src.cols; x++)
-			for (int z = 0; z < 3; z++)
-				samples.at<float>(y + x*src.rows, z) = src.at<Vec3b>(y, x)[z];
+	dst = src.clone();
+	vector<RGB> centroid;
+	vector<int> w;
+	int **group;
+	RGB *groupSum;
+	int *groupSize;
 
-	Mat labels;
-	int attempts = 5;
-	Mat centers;
-	kmeans(samples, clusterCount, labels, TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 10000, 0.0001), attempts, KMEANS_PP_CENTERS, centers);
+	groupSum = new RGB[clusterCount];
+	groupSize = new int[clusterCount];
+	group = new int*[src.rows];
+	for (int i = 0; i < src.rows; i++)
+		group[i] = new int[src.cols];
 
-	Mat new_image(src.size(), src.type());
-	for (int y = 0; y < src.rows; y++)
-		for (int x = 0; x < src.cols; x++)
+	//Init random clusterCount centroid 
+	for (int i = 0; i < src.rows; i++) {
+		for (int j = 0; j < src.cols; j++) {
+			if (centroid.size() < clusterCount)
+				centroid.push_back({ (int)src.at<Vec3b>(i, j)[0], (int)src.at<Vec3b>(i, j)[1], (int)src.at<Vec3b>(i, j)[2] });
+			if (centroid.size() == clusterCount)
+				break;
+		}
+		if (centroid.size() == clusterCount)
+			break;
+	}
+
+	//
+	while (true)
+	{
+		for (int i = 0; i < clusterCount; i++)
 		{
-			int cluster_idx = labels.at<int>(y + x*src.rows, 0);
-			new_image.at<Vec3b>(y, x)[0] = centers.at<float>(cluster_idx, 0);
-			new_image.at<Vec3b>(y, x)[1] = centers.at<float>(cluster_idx, 1);
-			new_image.at<Vec3b>(y, x)[2] = centers.at<float>(cluster_idx, 2);
+			groupSize[i] = 0;
+			groupSum[i] = { 0, 0, 0 };
 		}
 
-	dst = new_image.clone();
+		//Group pixel by min distance
+		for (int i = 0; i < src.rows; i++)
+		for (int j = 0; j < src.cols; j++)
+		{
+			int minDis = INT_MAX;
+			int minIdx;
+			for (int k = 0; k < clusterCount; k++)
+			{
+				int dis = (centroid[k].r - (int)src.at<Vec3b>(i, j)[0]) * (centroid[k].r - (int)src.at<Vec3b>(i, j)[0])
+					+ (centroid[k].g - (int)src.at<Vec3b>(i, j)[1]) * (centroid[k].g - (int)src.at<Vec3b>(i, j)[1])
+					+ (centroid[k].b - (int)src.at<Vec3b>(i, j)[2])  * (centroid[k].b - (int)src.at<Vec3b>(i, j)[2]);
+				if (dis < minDis)
+				{
+					minDis = dis;
+					minIdx = k;
+				}
+			}
+			group[i][j] = minIdx; //Pixel at i,j belong to group minIdx
+			groupSize[minIdx]++; //Size of group[i]
 
-	std::cout << "Kmean process completely!" << std::endl;
+			//Sum color of group[i]
+			groupSum[minIdx].r += (int)src.at<Vec3b>(i, j)[0];
+			groupSum[minIdx].g += (int)src.at<Vec3b>(i, j)[1];
+			groupSum[minIdx].b += (int)src.at<Vec3b>(i, j)[2];
+		}
+
+		bool isContinue = false;
+		int epsilon = 0;
+
+		int error = 0;
+		for (int i = 0; i < clusterCount; ++i)
+		if (groupSize[i] > 0)
+			error += abs(centroid[i].r - groupSum[i].r / groupSize[i]) + abs(centroid[i].g - groupSum[i].g / groupSize[i]) + abs(centroid[i].b - groupSum[i].b / groupSize[i]);
+
+		if (error > epsilon)
+		{
+			for (int i = 0; i < clusterCount; i++)
+			{
+				if (groupSize[i] < 2)
+					continue;
+
+				centroid[i].r = groupSum[i].r / groupSize[i];
+				centroid[i].g = groupSum[i].g / groupSize[i];
+				centroid[i].b = groupSum[i].b / groupSize[i];
+			}
+		}
+		else
+			break;
+	}
+
+	//Calc the result
+	for (int i = 0; i < src.rows; i++)
+	for (int j = 0; j < src.cols; j++){
+		dst.at<Vec3b>(i, j)[0] = centroid[group[i][j]].r;
+		dst.at<Vec3b>(i, j)[1] = centroid[group[i][j]].g;
+		dst.at<Vec3b>(i, j)[2] = centroid[group[i][j]].b;
+	}
+
+	//Release memory
+	delete[]groupSize;
+	delete[]groupSum;
+	for (int i = 0; i < src.rows; i++)
+		delete[]group[i];
+	delete[]group;
+
+	std::cout << "KmeanCode::Kmean process completely!" << std::endl;
 }
 
 // 7.1 RegionGrowing
