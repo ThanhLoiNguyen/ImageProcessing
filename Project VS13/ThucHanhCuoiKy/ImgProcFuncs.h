@@ -14,8 +14,26 @@ void deleteKernel(int **kernel);
 void GrayscaletoBinary(Mat &src, Mat &dst);
 
 //5.1 Biến đổi Fourier FFT thuận, nghịch
-void FFT(Mat src, Mat &dst);
-void inverseFFT(Mat src, Mat &dst);
+void FFTLib(Mat src, Mat &dst);
+void inverseFFTLib(Mat src, Mat &dst);
+void FFT(cv::Mat &src, cv::Mat &dst);
+void inverseFFT(cv::Mat &src, cv::Mat &dst);
+
+void doSth(Mat &src, Mat &dst);
+
+// 5.3. Lọc thông tần số thấp
+// threshold có giá trị từ 0 đến 1
+void IdealLowpassFilter(Mat &src, Mat &dst, float threshold);
+void ButterworthLowpassFilter(Mat &src, Mat &dst, float threshold);
+void GaussianLowpassFilter(Mat &src, Mat &dst, float threshold);
+
+
+// 5.4. Lọc thông tần số cao
+// threshold có giá trị từ 0 đến 1
+void IdealHighpassFilter(Mat &src, Mat &dst, float threshold);
+void ButterworthHighpassFilter(Mat &src, Mat &dst, float threshold);
+void GaussianHighpassFilter(Mat &src, Mat &dst, float threshold);
+
 
 //6.1 Phân tích thành phần chính
 //6.2 Rút trích đặc trưng cho tập ảnh mặt người dựa vào phân tích thành phần chính
@@ -34,7 +52,6 @@ void RegionGrowingSegmentation(Mat &src, Mat &dst, int seedx, int seedy, double 
 void KMeansLib(Mat src, Mat &dst, int clusterCount = 5);
 // Kmean tự code
 void Kmeans(Mat src, Mat &dst, int clusterCount = 5);
-
 
 
 // 8.1. Toán tử hình thái học trên ảnh nhị phân
@@ -63,7 +80,7 @@ void BinaryThinning(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int a
 void BinaryThickening(Mat &src, Mat &dst, int **kernel, int sz, int anchorx, int anchory);
 
 
-// 8.2 Toán tử hình thái học trên ảnh xám (chưa làm)
+// 8.2 Toán tử hình thái học trên ảnh xám
 void GrayScaleDilation(Mat &src, Mat &dst, int **kernel, int sz);
 void GrayScaleDilationLib(Mat &src, Mat &dst);
 
@@ -88,6 +105,4 @@ void TopHatTransformationLib(Mat &src, Mat &dst);
 void TexturalSegmentation(Mat &src, Mat &dst, int **kernel, int sz);
 void TexturalSegmentationLib(Mat &src, Mat &dst);
 
-void Granulometry();
-
-void Reconstruction();
+void Granulometry(Mat &src, Mat &dst, int sz, int level);

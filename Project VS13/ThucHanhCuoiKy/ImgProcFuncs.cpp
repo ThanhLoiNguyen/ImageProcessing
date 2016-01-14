@@ -2,9 +2,9 @@
 #include <iostream>
 #include <vector>
 #define PI 3.14159265
+#define E 2.7182818284590452353602874713527
 #define FW_MAX_8U 255.0
 using namespace cv;
-
 
 #include <iostream>
 #include <utility>
@@ -33,7 +33,7 @@ double pixelDistance(Vec3b p1, Vec3b p2)
 
 
 //5.1 Phép biến đổi Fourier dùng FFT thuận, nghịch
-void FFT(Mat src, Mat &dst)
+void FFTLib(Mat src, Mat &dst)
 {
 	if (src.empty())
 		return;
@@ -85,7 +85,7 @@ void FFT(Mat src, Mat &dst)
 	dst = magI.clone();
 }
 
-void inverseFFT(Mat src, Mat &dst)
+void inverseFFTLib(Mat src, Mat &dst)
 {
 	if (src.empty())
 		return;
@@ -130,6 +130,208 @@ Mat norm_0_255_helper(const Mat& src) {
 		break;
 	}
 	return dst;
+}
+
+//5.2 Lọc thông tần số thấp
+typedef pair<int, int> pii;
+
+void swapCorners(Mat &src)
+{
+	int cx = src.cols / 2;
+	int cy = src.rows / 2;
+
+	Mat q0(src, Rect(0, 0, cx, cy));
+	Mat q1(src, Rect(cx, 0, cx, cy));
+	Mat q2(src, Rect(0, cy, cx, cy));
+	Mat q3(src, Rect(cx, cy, cx, cy));
+
+	Mat tmp;
+	q0.copyTo(tmp);
+	q3.copyTo(q0);
+	tmp.copyTo(q3);
+
+	q1.copyTo(tmp);
+	q2.copyTo(q1);
+	tmp.copyTo(q2);
+}
+
+void IdealLowpassFilter(Mat &src, Mat &dst, float threshold)
+{
+	src.convertTo(dst, CV_32F);
+	dft(dst, dst, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+
+	swapCorners(dst);
+	Mat planes[2];
+	split(dst, planes);
+
+	float d0 = MAX(planes[0].rows, planes[1].rows) / 2.0 * threshold;
+	float mm = planes[0].rows / 2.0;
+	float nn = planes[0].cols / 2.0;
+
+	for (int x = 0; x < planes[0].rows; ++x)
+		for (int y = 0; y < planes[0].cols; ++y)
+		{
+			float d = sqrt((1.0*x - mm)*(1.0*x - mm) + (1.0*y - nn)*(1.0*y - nn));
+			if (d > d0)
+				planes[0].at<float>(x, y) = planes[1].at<float>(x, y) = 0;
+		}
+
+	merge(planes, 2, dst);
+	swapCorners(dst);
+
+	dft(dst, dst, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
+
+	dst.convertTo(dst, CV_8U);
+}
+
+void ButterworthLowpassFilter(Mat &src, Mat &dst, float threshold)
+{
+	src.convertTo(dst, CV_32F);
+	dft(dst, dst, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+
+	swapCorners(dst);
+	Mat planes[2];
+	split(dst, planes);
+
+	float d0 = MAX(planes[0].rows, planes[1].rows) / 2.0 * threshold;
+	float mm = planes[0].rows / 2.0;
+	float nn = planes[0].cols / 2.0;
+
+	for (int x = 0; x < planes[0].rows; ++x)
+		for (int y = 0; y < planes[0].cols; ++y)
+		{
+			float d = sqrt((1.0*x - mm)*(1.0*x - mm) + (1.0*y - nn)*(1.0*y - nn));
+			d = 1 + (d / d0)*(d / d0);
+			planes[0].at<float>(x, y) /= d;
+			planes[1].at<float>(x, y) /= d;
+		}
+
+	merge(planes, 2, dst);
+	swapCorners(dst);
+
+	dft(dst, dst, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
+
+	dst.convertTo(dst, CV_8U);
+}
+
+void GaussianLowpassFilter(Mat &src, Mat &dst, float threshold)
+{
+	src.convertTo(dst, CV_32F);
+	dft(dst, dst, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+
+	swapCorners(dst);
+	Mat planes[2];
+	split(dst, planes);
+
+	float d0 = MAX(planes[0].rows, planes[1].rows) / 2.0 * threshold;
+	float mm = planes[0].rows / 2.0;
+	float nn = planes[0].cols / 2.0;
+
+	for (int x = 0; x < planes[0].rows; ++x)
+		for (int y = 0; y < planes[0].cols; ++y)
+		{
+			float d = sqrt((1.0*x - mm)*(1.0*x - mm) + (1.0*y - nn)*(1.0*y - nn));
+			d = exp(-d*d / (2 * d0*d0));
+			planes[0].at<float>(x, y) *= d;
+			planes[1].at<float>(x, y) *= d;
+		}
+
+	merge(planes, 2, dst);
+	swapCorners(dst);
+
+	dft(dst, dst, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
+
+	dst.convertTo(dst, CV_8U);
+}
+
+//5.3 Lọc thông tần số cao
+void IdealHighpassFilter(Mat &src, Mat &dst, float threshold)
+{
+	src.convertTo(dst, CV_32F);
+	dft(dst, dst, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+
+	swapCorners(dst);
+	Mat planes[2];
+	split(dst, planes);
+
+	float d0 = MAX(planes[0].rows, planes[1].rows) / 2.0 * threshold;
+	float mm = planes[0].rows / 2.0;
+	float nn = planes[0].cols / 2.0;
+
+	for (int x = 0; x < planes[0].rows; ++x)
+		for (int y = 0; y < planes[0].cols; ++y)
+		{
+			float d = sqrt((1.0*x - mm)*(1.0*x - mm) + (1.0*y - nn)*(1.0*y - nn));
+			if (d < d0)
+				planes[0].at<float>(x, y) = planes[1].at<float>(x, y) = 0;
+		}
+
+	merge(planes, 2, dst);
+	swapCorners(dst);
+
+	dft(dst, dst, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
+
+	dst.convertTo(dst, CV_8U);
+}
+
+void ButterworthHighpassFilter(Mat &src, Mat &dst, float threshold)
+{
+	src.convertTo(dst, CV_32F);
+	dft(dst, dst, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+
+	swapCorners(dst);
+	Mat planes[2];
+	split(dst, planes);
+
+	float d0 = MAX(planes[0].rows, planes[1].rows) / 2.0 * threshold;
+	float mm = planes[0].rows / 2.0;
+	float nn = planes[0].cols / 2.0;
+
+	for (int x = 0; x < planes[0].rows; ++x)
+		for (int y = 0; y < planes[0].cols; ++y)
+		{
+			float d = sqrt((1.0*x - mm)*(1.0*x - mm) + (1.0*y - nn)*(1.0*y - nn));
+			d = 1 + (d0 / d)*(d0 / d);
+			planes[0].at<float>(x, y) /= d;
+			planes[1].at<float>(x, y) /= d;
+		}
+
+	merge(planes, 2, dst);
+	swapCorners(dst);
+
+	dft(dst, dst, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
+
+	dst.convertTo(dst, CV_8U);
+}
+
+void GaussianHighpassFilter(Mat &src, Mat &dst, float threshold)
+{
+	src.convertTo(dst, CV_32F);
+	dft(dst, dst, cv::DFT_SCALE | cv::DFT_COMPLEX_OUTPUT);
+
+	swapCorners(dst);
+	Mat planes[2];
+	split(dst, planes);
+
+	float d0 = MAX(planes[0].rows, planes[1].rows) / 2.0 * threshold;
+	float mm = planes[0].rows / 2.0;
+	float nn = planes[0].cols / 2.0;
+
+	for (int x = 0; x < planes[0].rows; ++x)
+		for (int y = 0; y < planes[0].cols; ++y)
+		{
+			float d = sqrt((1.0*x - mm)*(1.0*x - mm) + (1.0*y - nn)*(1.0*y - nn));
+			d = 1 - exp(-d*d / (2 * d0*d0));
+			planes[0].at<float>(x, y) *= d;
+			planes[1].at<float>(x, y) *= d;
+		}
+
+	merge(planes, 2, dst);
+	swapCorners(dst);
+
+	dft(dst, dst, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
+
+	dst.convertTo(dst, CV_8U);
 }
 
 // Converts the images given in src into a row matrix.
@@ -255,9 +457,9 @@ void KMeansLib(Mat src, Mat &dst, int clusterCount)
 
 	Mat samples(src.rows * src.cols, 3, CV_32F);
 	for (int y = 0; y < src.rows; y++)
-	for (int x = 0; x < src.cols; x++)
-	for (int z = 0; z < 3; z++)
-		samples.at<float>(y + x*src.rows, z) = src.at<Vec3b>(y, x)[z];
+		for (int x = 0; x < src.cols; x++)
+			for (int z = 0; z < 3; z++)
+				samples.at<float>(y + x*src.rows, z) = src.at<Vec3b>(y, x)[z];
 
 	Mat labels;
 	int attempts = 5;
@@ -266,13 +468,13 @@ void KMeansLib(Mat src, Mat &dst, int clusterCount)
 
 	Mat new_image(src.size(), src.type());
 	for (int y = 0; y < src.rows; y++)
-	for (int x = 0; x < src.cols; x++)
-	{
-		int cluster_idx = labels.at<int>(y + x*src.rows, 0);
-		new_image.at<Vec3b>(y, x)[0] = centers.at<float>(cluster_idx, 0);
-		new_image.at<Vec3b>(y, x)[1] = centers.at<float>(cluster_idx, 1);
-		new_image.at<Vec3b>(y, x)[2] = centers.at<float>(cluster_idx, 2);
-	}
+		for (int x = 0; x < src.cols; x++)
+		{
+			int cluster_idx = labels.at<int>(y + x*src.rows, 0);
+			new_image.at<Vec3b>(y, x)[0] = centers.at<float>(cluster_idx, 0);
+			new_image.at<Vec3b>(y, x)[1] = centers.at<float>(cluster_idx, 1);
+			new_image.at<Vec3b>(y, x)[2] = centers.at<float>(cluster_idx, 2);
+		}
 
 	dst = new_image.clone();
 
@@ -325,37 +527,37 @@ void Kmeans(Mat src, Mat &dst, int clusterCount)
 
 		//Group pixel by min distance
 		for (int i = 0; i < src.rows; i++)
-		for (int j = 0; j < src.cols; j++)
-		{
-			int minDis = INT_MAX;
-			int minIdx;
-			for (int k = 0; k < clusterCount; k++)
+			for (int j = 0; j < src.cols; j++)
 			{
-				int dis = (centroid[k].r - (int)src.at<Vec3b>(i, j)[0]) * (centroid[k].r - (int)src.at<Vec3b>(i, j)[0])
-					+ (centroid[k].g - (int)src.at<Vec3b>(i, j)[1]) * (centroid[k].g - (int)src.at<Vec3b>(i, j)[1])
-					+ (centroid[k].b - (int)src.at<Vec3b>(i, j)[2])  * (centroid[k].b - (int)src.at<Vec3b>(i, j)[2]);
-				if (dis < minDis)
+				int minDis = INT_MAX;
+				int minIdx;
+				for (int k = 0; k < clusterCount; k++)
 				{
-					minDis = dis;
-					minIdx = k;
+					int dis = (centroid[k].r - (int)src.at<Vec3b>(i, j)[0]) * (centroid[k].r - (int)src.at<Vec3b>(i, j)[0])
+						+ (centroid[k].g - (int)src.at<Vec3b>(i, j)[1]) * (centroid[k].g - (int)src.at<Vec3b>(i, j)[1])
+						+ (centroid[k].b - (int)src.at<Vec3b>(i, j)[2])  * (centroid[k].b - (int)src.at<Vec3b>(i, j)[2]);
+					if (dis < minDis)
+					{
+						minDis = dis;
+						minIdx = k;
+					}
 				}
-			}
-			group[i][j] = minIdx; //Pixel at i,j belong to group minIdx
-			groupSize[minIdx]++; //Size of group[i]
+				group[i][j] = minIdx; //Pixel at i,j belong to group minIdx
+				groupSize[minIdx]++; //Size of group[i]
 
-			//Sum color of group[i]
-			groupSum[minIdx].r += (int)src.at<Vec3b>(i, j)[0];
-			groupSum[minIdx].g += (int)src.at<Vec3b>(i, j)[1];
-			groupSum[minIdx].b += (int)src.at<Vec3b>(i, j)[2];
-		}
+				//Sum color of group[i]
+				groupSum[minIdx].r += (int)src.at<Vec3b>(i, j)[0];
+				groupSum[minIdx].g += (int)src.at<Vec3b>(i, j)[1];
+				groupSum[minIdx].b += (int)src.at<Vec3b>(i, j)[2];
+			}
 
 		bool isContinue = false;
 		int epsilon = 0;
 
 		int error = 0;
 		for (int i = 0; i < clusterCount; ++i)
-		if (groupSize[i] > 0)
-			error += abs(centroid[i].r - groupSum[i].r / groupSize[i]) + abs(centroid[i].g - groupSum[i].g / groupSize[i]) + abs(centroid[i].b - groupSum[i].b / groupSize[i]);
+			if (groupSize[i] > 0)
+				error += abs(centroid[i].r - groupSum[i].r / groupSize[i]) + abs(centroid[i].g - groupSum[i].g / groupSize[i]) + abs(centroid[i].b - groupSum[i].b / groupSize[i]);
 
 		if (error > epsilon)
 		{
@@ -375,11 +577,11 @@ void Kmeans(Mat src, Mat &dst, int clusterCount)
 
 	//Calc the result
 	for (int i = 0; i < src.rows; i++)
-	for (int j = 0; j < src.cols; j++){
-		dst.at<Vec3b>(i, j)[0] = centroid[group[i][j]].r;
-		dst.at<Vec3b>(i, j)[1] = centroid[group[i][j]].g;
-		dst.at<Vec3b>(i, j)[2] = centroid[group[i][j]].b;
-	}
+		for (int j = 0; j < src.cols; j++){
+			dst.at<Vec3b>(i, j)[0] = centroid[group[i][j]].r;
+			dst.at<Vec3b>(i, j)[1] = centroid[group[i][j]].g;
+			dst.at<Vec3b>(i, j)[2] = centroid[group[i][j]].b;
+		}
 
 	//Release memory
 	delete[]groupSize;
@@ -708,4 +910,39 @@ void TexturalSegmentationLib(Mat &src, Mat &dst)
 {
 	GrayScaleClosingLib(src, dst);
 	GrayScaleOpeningLib(dst, dst);
+}
+
+void Granulometry(Mat &src, Mat &dst, int sz, int level)
+{
+	Mat res;
+	res = src.clone();
+
+	for (int i = 0; i < src.rows / sz; ++i)
+		for (int j = 0; j < src.cols / sz; ++j)
+		{
+			Mat tmp, dst1;
+			tmp = src(Rect(j*sz, i*sz, sz, sz)).clone();
+			for (int k = 0; k < level; k++)
+			morphologyEx(tmp, dst1, MORPH_OPEN, Mat());
+			for (int x = 0; x < sz; ++x)
+				for (int y = 0; y < sz; ++y)
+					res.at<uchar>(i*sz + x, j*sz + y) = dst1.at<uchar>(x, y);
+		}
+	dst = res.clone();
+}
+
+void FFT1(Mat &src, Mat& dst)
+{
+	Mat res = src.clone();
+	for (int u = 0; u < src.rows; ++u)
+		for (int v = 0; v < src.cols; ++v)
+		{
+			int sum = 0;
+			for (int x = 0; x < src.rows; ++x)
+				for (int y = 0; y < src.cols; ++y)
+					sum += (src.at<uchar>(x, y)* pow(E, -2 * PI*(x*u*1.0 / src.rows + y*v*1.0 / src.cols)));
+			sum /= (src.rows*src.cols);
+			res.at<uchar>(u, v) = sum;
+		}
+	dst = res.clone();
 }

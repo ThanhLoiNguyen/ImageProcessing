@@ -23,7 +23,6 @@ void showMenu()
 		<< "Vui long cho tac vu - go 0 de thoat" << endl;
 }
 
-
 int showMenuFunc9()
 {
 	system("cls");
@@ -37,7 +36,8 @@ int showMenuFunc9()
 		<< "\t6. RegionFilling" << endl
 		<< "\t7. HitOrMiss" << endl
 		<< "\t8. Thinning" << endl
-		<< "\t9. Thickening" << endl;
+		<< "\t9. Thickening" << endl
+		<< "\t0. To return" << endl;
 
 	cin >> f;
 	return f;
@@ -57,7 +57,63 @@ int showMenuFunc10()
 		<< "\t7. Top-hat transformation" << endl
 		<< "\t8. Textural segmentation" << endl
 		<< "\t9. Granulometry" << endl
-		<< "\t10. Reconstruction" << endl;
+		<< "\t0. To return" << endl;
 	cin >> f;
 	return f;
+}
+
+
+int showMenuFunc3()
+{
+	system("cls");
+	int f;
+	cout << "-----Loc thong tan thap-----" << endl
+		<< "\t1. IdealLowpassFilter" << endl
+		<< "\t2. ButterworthLowpassFilter" << endl
+		<< "\t3. GaussianLowpassFilter" << endl
+		<< "\t0. To return" << endl;
+	cin >> f;
+	return f;
+
+}
+
+int showMenuFunc4()
+{
+	system("cls");
+	int f;
+	cout << "-----Loc thong tan cao-----" << endl
+		<< "\t1. IdealHighpassFilter" << endl
+		<< "\t2. ButterworthHighpassFilter" << endl
+		<< "\t3. GaussianHighpassFilter" << endl
+		<< "\t0. To return" << endl;
+	cin >> f;
+	return f;
+}
+
+int** newKernel(int size)
+{
+	int **kernel = new int*[size];
+	for (int i = 0; i < size; i++)
+	{
+		kernel[i] = new int[size];
+		for (int j = 0; j < size; j++)
+			kernel[i][j] = 1;
+	}
+	return kernel;
+}
+
+void repairKernel(int** kernel)
+{
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+			kernel[i][j] = -1;
+	kernel[1][1] = 1;
+	kernel[1][2] = 0;
+}
+
+void deleteKernel(int **kernel)
+{
+	for (int i = 0; i < 3; i++)
+		delete kernel[i];
+	delete kernel;
 }
